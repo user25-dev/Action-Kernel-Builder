@@ -116,7 +116,7 @@ jobs:
       if: env.USE_GCC == 'true' && env.USE_CLANG != 'true'
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace
-        if [ ${{ env.USE_GCC_64 }} = true ]; then
+        if [[ "${ USE_GCC_64 }" == "true" ]]; then
             if [[ ${{ env.GCC_64_SOURCE }} == *'.tar.gz' ]]; then
                 wget -nv -O gcc-64.tar.gz ${{ env.GCC_64_SOURCE }}
                 mkdir gcc-64
@@ -144,7 +144,7 @@ jobs:
                 mv -f "$(find ./gcc-64 -mindepth 1 -maxdepth 1 -type d)"/* ./gcc-64
             fi
         fi
-        if [ ${{ env.USE_GCC_32 }} = true ]; then
+        if [[ "${ USE_GCC_32 }" == "true" ]]; then
             if [[ ${{ env.GCC_32_SOURCE }} == *'.tar.gz' ]]; then
                 wget -nv -O gcc-32.tar.gz ${{ env.GCC_32_SOURCE }}
                 mkdir gcc-32
@@ -197,13 +197,13 @@ jobs:
     - name: Setup Configuration for kernel
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        if [ ${{ env.DISABLE_LTO }} = true ]; then
+        if [[ "${ DISABLE_LTO }" == "true" ]]; then
             sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/${{ env.KERNEL_ARCH }}/configs/${DEVICE}_defconfig
             sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/${{ env.KERNEL_ARCH }}/configs/${DEVICE}_defconfig
             sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/${{ env.KERNEL_ARCH }}/configs/${DEVICE}_defconfig
             echo "CONFIG_LTO_NONE=y" >> arch/${{ env.KERNEL_ARCH }}/configs/${DEVICE}_defconfig
         fi
-        if [ ${{ env.DISABLE_CC_WERROR }} = true ]; then
+        if [[ "${ DISABLE_CC_WERROR }" == "true" ]]; then
             echo "CONFIG_CC_WERROR=n" >> arch/${{ env.KERNEL_ARCH }}/configs/${DEVICE}_defconfig
         fi
 
@@ -217,14 +217,14 @@ jobs:
     - name: Build kernel
       run: |
         cd $GITHUB_WORKSPACE/kernel_workspace/android-kernel
-        if [ ${{ env.USE_GCC }} = true ]; then
-            if [ ${{ env.USE_GCC_64 }} = true ]; then
+        if [[ "${ USE_GCC }" == "true" ]]; then
+            if [[ "${ USE_GCC_64 }" == "true" ]]; then
                 export PATH=$GITHUB_WORKSPACE/kernel_workspace/gcc-64/bin:$PATH
             fi
-            if [ ${{ env.USE_GCC_32 }} = true ]; then
+            if [[ "${ USE_GCC_32 }" == "true" ]]; then
                 export PATH=$GITHUB_WORKSPACE/kernel_workspace/gcc-32/bin:$PATH
             fi
-        elif [ ${{ env.USE_CLANG }} = true ]; then
+        elif [[ "${ USE_CLANG }" == "true" ]]; then
             export PATH=$GITHUB_WORKSPACE/kernel_workspace/clang/bin:$PATH
         else
             echo "Toolchain not selected"
@@ -233,14 +233,14 @@ jobs:
         export KBUILD_BUILD_HOST=Github-Action
         export KBUILD_BUILD_USER=$(echo ${{ github.actor }} | tr A-Z a-z)
         make -j$(nproc --all) CC=clang O=out ARCH=${{ env.KERNEL_ARCH }} ${{ env.EXTRA_CMDS }} ${DEVICE}_defconfig
-        if [ ${{ env.ENABLE_CCACHE }} = true ]; then
-            if [ ${{ env.USE_GCC }} = true ]; then
+        if [[ "${ ENABLE_CCACHE }" == "true" ]]; then
+            if [[ "${ env.USE_GCC }" == "true" ]]; then
                 make -j$(nproc --all) CC="ccache gcc" O=out ARCH=${{ env.KERNEL_ARCH }} ${{ env.EXTRA_CMDS }}
             else
                 make -j$(nproc --all) CC="ccache clang" O=out ARCH=${{ env.KERNEL_ARCH }} ${{ env.EXTRA_CMDS }}
             fi
         else
-            if [ ${{ env.USE_GCC }} = true ]; then
+            if [[ "${ USE_GCC }" == "true" ]]; then
                 make -j$(nproc --all) CC=gcc O=out ARCH=${{ env.KERNEL_ARCH }} ${{ env.EXTRA_CMDS }}
             else
                 make -j$(nproc --all) CC=clang O=out ARCH=${{ env.KERNEL_ARCH }} ${{ env.EXTRA_CMDS }}
@@ -256,7 +256,7 @@ jobs:
            echo "Kernel output file is empty"
            exit 1
        fi
-       if [ ${{ env.NEED_DTBO }} = true ]; then
+       if [[ "${ NEED_DTBO }" == "true" ]]; then
            if [ -f android-kernel/out/arch/${{ env.KERNEL_ARCH }}/boot/dtbo.img ]; then
                echo "CHECK_DTBO_IS_OK=true" >> $GITHUB_ENV
            else
@@ -293,7 +293,7 @@ jobs:
             rm AnyKernel3.zip
         fi
         cp android-kernel/out/arch/${{ env.KERNEL_ARCH }}/boot/${{ env.KERNEL_IMAGE_NAME }} AnyKernel3/
-        if [ ${{ env.CHECK_DTBO_IS_OK }} = true ]; then
+        if [[ "${ CHECK_DTBO_IS_OK }" == "true" ]]; then
             cp android-kernel/out/arch/${{ env.KERNEL_ARCH }}/boot/dtbo.img AnyKernel3/
         fi
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
