@@ -7,21 +7,18 @@ jobs:
   build:
     name: Build Kernel by ${{ github.actor }}
     runs-on: ubuntu-24.04
-    
+    env:
+      KERNEL_SOURCE: "https://github.com/user25-dev/android_kernel_xiaomi_earth.git"
+      KERNEL_SOURCE_BRANCH: "lineage-23.2"
+      KERNEL_DEFCONFIG: "earth_defconfig"
+      TARGET_ARCH: "arm64"
+      KERNEL_FILE: "Image.gz-dtb"
+      BUILD_EXTRA_COMMAND: "CC=clang READELF=llvm-readelf OBJCOPY=llvm-objcopy AS=llvm-as LD=ld.lld NM=llvm-nm OBJDUMP=llvm-objdump STRIP=llvm-strip CROSS_COMPILE_ARM32=arm-linux-gnueabi-"
+      MAKE_BOOT_IMAGE: false
+      SOURCE_BOOT_IMAGE: "https://mirrorbits.lineageos.org/full/earth/20260215/boot.img"
     steps:
     - uses: actions/checkout@v4
-    - name: Setup Configuration
-      run: |
-        echo "KERNEL_SOURCE=$(cat config.env | grep "KERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "KERNEL_SOURCE_BRANCH=$(cat config.env | grep "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "KERNEL_DEFCONFIG=$(cat config.env | grep "KERNEL_DEFCONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "TARGET_ARCH=$(cat config.env | grep "TARGET_ARCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "KERNEL_FILE=$(cat config.env | grep "KERNEL_FILE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "BUILD_EXTRA_COMMAND=$(cat config.env | grep "EXTRA_BUILD_COMMAND" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
-        echo "NEED_DTBO=$(cat config.env | grep "NEED_DTBO" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "MAKE_BOOT_IMAGE=$(cat config.env | grep "MAKE_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-        echo "SOURCE_BOOT_IMAGE=$(cat config.env | grep "SOURCE_BOOT_IMAGE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
-  
+
     - name: Setup build kernel environment
       run: |
         sudo apt-get update
