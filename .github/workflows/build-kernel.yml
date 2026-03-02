@@ -2,20 +2,53 @@ name: Build Kernel
 
 on:
   workflow_dispatch:
+    inputs:
+      device:
+        description: "Device codename"
+        required: false
+        default: "earth"
+      kernel_source:
+        description: "Kernel source repository URL"
+        required: false
+        default: "https://github.com/user25-dev/android_kernel_xiaomi_earth.git"
+      kernel_source_branch:
+        description: "Kernel source branch"
+        required: false
+        default: "lineage-23.2"
+      kernel_defconfig:
+        description: "Kernel defconfig name"
+        required: false
+        default: "earth_defconfig"
+      target_arch:
+        description: "Target architecture"
+        required: false
+        default: "arm64"
+      kernel_file:
+        description: "Kernel output file name"
+        required: false
+        default: "Image.gz-dtb"
+      make_boot_image:
+        description: "Build boot image (true/false)"
+        required: false
+        default: "false"
+      source_boot_image:
+        description: "Source boot image URL"
+        required: false
+        default: "https://mirrorbits.lineageos.org/full/earth/20260215/boot.img"
 
 jobs:
   build:
     name: Build Kernel by ${{ github.actor }}
     runs-on: ubuntu-24.04
     env:
-      DEVICE: "earth"
-      KERNEL_SOURCE: "https://github.com/user25-dev/android_kernel_xiaomi_earth.git"
-      KERNEL_SOURCE_BRANCH: "lineage-23.2"
-      KERNEL_DEFCONFIG: "earth_defconfig"
-      TARGET_ARCH: "arm64"
-      KERNEL_FILE: "Image.gz-dtb"
-      MAKE_BOOT_IMAGE: false
-      SOURCE_BOOT_IMAGE: "https://mirrorbits.lineageos.org/full/earth/20260215/boot.img"
+      DEVICE: ${{ github.event.inputs.device }}
+      KERNEL_SOURCE: ${{ github.event.inputs.kernel_source }}
+      KERNEL_SOURCE_BRANCH: ${{ github.event.inputs.kernel_source_branch }}
+      KERNEL_DEFCONFIG: ${{ github.event.inputs.kernel_defconfig }}
+      TARGET_ARCH: ${{ github.event.inputs.target_arch }}
+      KERNEL_FILE: ${{ github.event.inputs.kernel_file }}
+      MAKE_BOOT_IMAGE: ${{ github.event.inputs.make_boot_image }}
+      SOURCE_BOOT_IMAGE: ${{ github.event.inputs.source_boot_image }}
     steps:
     - uses: actions/checkout@v4
 
@@ -24,6 +57,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y bc bison build-essential ccache curl flex g++-multilib gcc-multilib git git-lfs gnupg gperf imagemagick lib32ncurses-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses6 libncurses-dev libsdl1.2-dev libssl-dev libwxgtk3.2-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev
         echo "BUILD_TIME=$(TZ=Asia/Kolkata date "+%Y%m%d%H%M")" >> $GITHUB_ENV
+        export TZ="Asia/Kolkata"
         mkdir -p $GITHUB_WORKSPACE/kernel_workspace
 
     - name: Download Clang Toolchain
