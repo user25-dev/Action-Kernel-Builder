@@ -34,7 +34,24 @@ jobs:
 
     - name: Prepare environment
       run: |
-        grep -v -E "^#|^\n" config.env | sed 's/ #.*//; s/#.*//' >> $GITHUB_ENV
+        set -e
+        while IFS= read -r raw_line || [[ -n "$raw_line" ]]; do
+            # Trim leading/trailing whitespace
+            line="$(echo "$raw_line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+            # Skip empty lines
+            [[ -z "$line" ]] && continue
+            # Skip full-line comments
+            [[ "$line" =~ ^# ]] && continue
+            # Remove inline comments (only if preceded by space)
+            line="$(echo "$line" | sed 's/[[:space:]]#.*$//')"
+            # Validate KEY=VALUE format
+            if [[ ! "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; then
+                echo "Invalid line in config.env: $raw_line"
+                exit 1
+            fi
+            # Append to GitHub environment
+            echo "$line" >> "$GITHUB_ENV"
+        done < config.env
 
     - name: Set swap to 10G
       uses: pierotofy/set-swap-space@master
