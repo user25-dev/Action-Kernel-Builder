@@ -5,28 +5,32 @@ on:
     inputs:
       device:
         description: "Device codename"
-        required: false
+        required: true
         default: "earth"
       kernel_source:
         description: "Kernel source repository URL"
-        required: false
+        required: true
         default: "https://github.com/user25-dev/android_kernel_xiaomi_earth.git"
       kernel_source_branch:
         description: "Kernel source branch"
-        required: false
+        required: true
         default: "lineage-23.2"
       kernel_defconfig:
         description: "Kernel defconfig name"
-        required: false
+        required: true
         default: "earth_defconfig"
       target_arch:
         description: "Target architecture"
-        required: false
+        required: true
         default: "arm64"
       kernel_file:
         description: "Kernel output file name"
-        required: false
+        required: true
         default: "Image.gz-dtb"
+      kernel_name:
+        description: "Kernel name"
+        required: true
+        default: "Kernel"
       make_boot_image:
         description: "Build boot image (true/false)"
         required: false
@@ -35,6 +39,9 @@ on:
         description: "Source boot image URL"
         required: false
         default: "https://mirrorbits.lineageos.org/full/earth/20260215/boot.img"
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -145,6 +152,7 @@ jobs:
             cp android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img AnyKernel3/
         fi
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
+        zip -r0 ${{ env.KERNEL_NAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}.zip AnyKernel3/*
 
     - name: Make boot image
       if: env.HAVE_SOURCE_BOOT_IMAGE == 'true' && env.CHECK_FILE_IS_OK == 'true'
@@ -159,30 +167,50 @@ jobs:
             echo "Boot image is empty"
         fi
 
-    - name: Upload ${{ env.KERNEL_FILE }}
+    - name: Create Release
       if: env.CHECK_FILE_IS_OK == 'true'
-      uses: actions/upload-artifact@v4
+      id: create_release
+      uses: softprops/action-gh-release@v2
       with:
-        name: ${{ env.KERNEL_FILE }}${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
-        path: kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/${{ env.KERNEL_FILE }}
+        tag_name: ${{ env.BUILD_TIME }}
+        name: ${{ env.KERNEL_NAME }}-Build-${{ env.BUILD_TIME }}
+        body: |
+          Automated kernel build for ${{ env.DEVICE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Kernel
+      if: env.CHECK_FILE_IS_OK == 'true'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ env.BUILD_TIME }}
+        files: kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/${{ env.KERNEL_FILE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload AnyKernel3
       if: env.CHECK_FILE_IS_OK == 'true'
-      uses: actions/upload-artifact@v4
+      uses: softprops/action-gh-release@v2
       with:
-        name: AnyKernel3${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
-        path: kernel_workspace/AnyKernel3/*
+        tag_name: ${{ env.BUILD_TIME }}
+        files: kernel_workspace/${{ env.KERNEL_NAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload DTBO image
+    - name: Upload DTBO
       if: env.CHECK_DTBO_IS_OK == 'true'
-      uses: actions/upload-artifact@v4
+      uses: softprops/action-gh-release@v2
       with:
-        name: dtbo-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
-        path: kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img
+        tag_name: ${{ env.BUILD_TIME }}
+        files: kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload boot image
+    - name: Upload Boot Image
       if: env.MAKE_BOOT_IMAGE_IS_OK == 'true'
-      uses: actions/upload-artifact@v4
+      uses: softprops/action-gh-release@v2
       with:
-        name: boot${{ env.UPLOADNAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}
-        path: kernel_workspace/boot.img
+        tag_name: ${{ env.BUILD_TIME }}
+        files: kernel_workspace/boot.img
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
