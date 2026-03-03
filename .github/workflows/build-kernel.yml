@@ -54,6 +54,7 @@ jobs:
       KERNEL_DEFCONFIG: ${{ github.event.inputs.kernel_defconfig }}
       TARGET_ARCH: ${{ github.event.inputs.target_arch }}
       KERNEL_FILE: ${{ github.event.inputs.kernel_file }}
+      KERNEL_NAME: ${{ github.event.inputs.kernel_name }}
       MAKE_BOOT_IMAGE: ${{ github.event.inputs.make_boot_image }}
       SOURCE_BOOT_IMAGE: ${{ github.event.inputs.source_boot_image }}
     steps:
