@@ -147,7 +147,9 @@ jobs:
             cp android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img AnyKernel3/
         fi
         rm -rf AnyKernel3/.git* AnyKernel3/README.md
-        zip -r0 ${{ env.KERNEL_NAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}.zip AnyKernel3/*
+        cd AnyKernel3
+        zip -r0 ../${{ env.KERNEL_NAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}.zip *
+        cd ..
 
     - name: Make boot image
       if: env.HAVE_SOURCE_BOOT_IMAGE == 'true' && env.CHECK_FILE_IS_OK == 'true'
@@ -176,4 +178,5 @@ jobs:
           kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img
           kernel_workspace/boot.img
       env:
+
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
