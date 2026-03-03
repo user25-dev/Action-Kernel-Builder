@@ -75,12 +75,6 @@ jobs:
         tar -C clang/ -zxvf clang.tar.gz
         rm clang.tar.gz
 
-    - name: Download GCC Toolchain
-      run: |
-        mkdir gcc-aosp
-        wget https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/606f80986096476912e04e5c2913685a8f2c3b65.tar.gz
-        tar -C gcc-aosp/ -zxvf 606f80986096476912e04e5c2913685a8f2c3b65.tar.gz
-
     - name: Download mkbootimg tools
       if: env.MAKE_BOOT_IMAGE == 'true'
       run: |
