@@ -164,48 +164,16 @@ jobs:
 
     - name: Create Release
       if: env.CHECK_FILE_IS_OK == 'true'
-      id: create_release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ env.BUILD_TIME }}
         name: ${{ env.KERNEL_NAME }}-Build-${{ env.BUILD_TIME }}
-        body: |
-          Automated kernel build for ${{ env.DEVICE }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Kernel
-      if: env.CHECK_FILE_IS_OK == 'true'
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ env.BUILD_TIME }}
-        files: kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/${{ env.KERNEL_FILE }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload AnyKernel3
-      if: env.CHECK_FILE_IS_OK == 'true'
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ env.BUILD_TIME }}
-        files: kernel_workspace/${{ env.KERNEL_NAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}.zip
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload DTBO
-      if: env.CHECK_DTBO_IS_OK == 'true'
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ env.BUILD_TIME }}
-        files: kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Boot Image
-      if: env.MAKE_BOOT_IMAGE_IS_OK == 'true'
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ env.BUILD_TIME }}
-        files: kernel_workspace/boot.img
+        body: Automated kernel build for ${{ env.DEVICE }}
+        fail_on_unmatched_files: false
+        files: |
+          kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/${{ env.KERNEL_FILE }}
+          kernel_workspace/${{ env.KERNEL_NAME }}-${{ env.DEVICE }}-${{ env.BUILD_TIME }}.zip
+          kernel_workspace/android-kernel/out/arch/${{ env.TARGET_ARCH }}/boot/dtbo.img
+          kernel_workspace/boot.img
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
